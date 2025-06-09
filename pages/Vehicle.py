@@ -25,15 +25,17 @@ st.markdown(
         margin-bottom: 25px;
     }
     /* 타이틀 스타일 */
-    h1, h3 {
+    h1 {
         color: #0078D7; /* 파란색 계열 */
         font-weight: 700;
     }
-    /* info박스 커스텀 */
-    .stAlert {
-        border-left: 6px solid #0078D7 !important;
-        background-color: #e6f0fa !important;
-        color: #005a9e !important;
+    /* info 박스 스타일 */
+    .stAlert > div {
+        background-color: #eaf4fc !important;
+        color: #666666 !important;
+        border-radius: 10px;
+        padding: 1rem;
+        font-size: 1.1rem;
     }
     /* 버튼 커스텀 */
     div.stButton > button {
@@ -63,7 +65,7 @@ ex_sex = ['전체',"남", "여"]
 st.markdown("# 🚗 전국 자동차 등록 현황", unsafe_allow_html=True)
 
 # 요약 info 박스에 카드 스타일 적용
-st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('', unsafe_allow_html=True)
 st.info(
     """
 **페이지 요약**
@@ -84,7 +86,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<br>', unsafe_allow_html=True)
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('', unsafe_allow_html=True)
 
 st.markdown("### 🔍 조회하기")
 col1, col2 = st.columns(2)
@@ -110,7 +112,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<br>', unsafe_allow_html=True)
 
 # 데이터 가져오기, 그래프 출력 부분 카드 스타일 적용
-st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('', unsafe_allow_html=True)
 
 @st.cache_data
 def get_UN_data():
@@ -157,7 +159,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<br>', unsafe_allow_html=True)
 
 # 엑셀 다운로드 카드 스타일 적용
-st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('', unsafe_allow_html=True)
 st.markdown("### 📥 엑셀 파일 다운로드")
 st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
 
@@ -184,3 +186,14 @@ if st.button("엑셀 생성"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 st.markdown('</div>', unsafe_allow_html=True)
+
+st.sidebar.header("전국 자동차 등록 현황")
+st.sidebar.markdown("### 🛠️ 사용법")
+st.sidebar.markdown(
+    """
+- 원하는 조건, 지역을 선택하세요.  
+- 조건별로 변경되는 추가 조건을 선택하세요
+- 요약 통계표와 엑셀 데이터를 받을 수 있습니다.  
+- 데이터베이스 연결 상태에 따라 로딩 시간이 걸릴 수 있습니다.
+"""
+)
