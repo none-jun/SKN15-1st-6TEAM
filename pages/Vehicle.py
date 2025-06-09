@@ -3,6 +3,7 @@ import pandas as pd
 import altair as alt
 from urllib.error import URLError
 import io
+import pymysql
 
 st.set_page_config(page_title="Vehicle", page_icon="🌍", layout="wide")
 
@@ -29,6 +30,11 @@ st.markdown(
         color: #0078D7; /* 파란색 계열 */
         font-weight: 700;
     }
+    h3 {
+        padding-top : 50px;
+        padding-bottom : 30px;
+        
+    }
     /* info 박스 스타일 */
     .stAlert > div {
         background-color: #eaf4fc !important;
@@ -44,6 +50,7 @@ st.markdown(
         border-radius: 8px;
         padding: 8px 20px;
         font-weight: 600;
+        margin-top: 25px;
         transition: background-color 0.3s ease;
     }
     div.stButton > button:hover {
@@ -56,11 +63,11 @@ st.markdown(
 )
 
 
-ex_city = ['전체',"서울", "부산", "광주"]
-ex_gu = ['전체',"동작구", "부산진구", "광산구"]
-ex_car = ['전체',"화물차", "승용차", "소형차"]
-ex_fuel = ['전체',"가솔린", "전기"]
-ex_sex = ['전체',"남", "여"]
+city_list = ['전체','강원','경기','경남','경북','광주','대구','대전','부산','서울','세종','울산','인천','전남','전북','제주','충남','충북']
+gu_list = ['전체',"동작구", "부산진구", "광산구"]
+cartype_list = ['전체',"화물차", "승용차", "소형차"]
+fuel_list = ['전체','CNG','LNG','경유','기타연료','등유','수소','알코올','엘피지','전기','총계','태양열','하이브리드(CNG+전기)','하이브리드(LNG+전기)','하이브리드(LPG+전기)','하이브리드(경유+전기)','하이브리드(휘발유+전기)','휘발유','수소전기']
+sex_list = ['전체',"남", "여"]
 
 st.markdown("# 🚗 전국 자동차 등록 현황", unsafe_allow_html=True)
 
@@ -89,63 +96,112 @@ st.markdown('<br>', unsafe_allow_html=True)
 st.markdown('', unsafe_allow_html=True)
 
 st.markdown("### 🔍 조회하기")
-col1, col2 = st.columns(2)
 
-with col1:
-    selection = st.selectbox("조건 선택", ["선택하세요", "지역별", "차종별", "연료별", "성별별"], key="selection")
-    if selection == "지역별":
-        sex1 = st.selectbox("시군구 선택", ex_gu)
-    elif selection == "차종별":
-        age1 = st.selectbox("차종별 선택", ex_car)
-    elif selection == "연료별":
-        age1 = st.selectbox("연료별 선택", ex_fuel)
-    elif selection == "성별별":
-        age1 = st.selectbox("성별 선택", ex_sex)
-    elif selection == "선택하세요":
-        st.info("조건을 선택해주세요.")
 
-with col2:
-    city = st.selectbox("지역 선택", ex_city, key="ex_city")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<br>', unsafe_allow_html=True)
-
-# 데이터 가져오기, 그래프 출력 부분 카드 스타일 적용
-st.markdown('', unsafe_allow_html=True)
-
-@st.cache_data
-def get_UN_data():
-    AWS_BUCKET_URL = "http://streamlit-demo-data.s3-us-west-2.amazonaws.com"
-    df = pd.read_csv(AWS_BUCKET_URL + "/agri.csv.gz")
-    return df.set_index("Region")
-
+# -------------------------- 지역,차종,연료,성별 선택 부분 각각 함수 ------------------------- #
 try:
-    df = get_UN_data()
-    countries = st.multiselect(
-        "국가 선택", list(df.index), ["China", "United States of America"]
-    )
-    if not countries:
-        st.error("최소 한 개 이상의 국가를 선택하세요.")
-    else:
-        data = df.loc[countries]
-        data /= 1000000.0
-        st.write("### 📊 요약 통계 그래프", data.sort_index())
-
-        data = data.T.reset_index()
-        data = pd.melt(data, id_vars=["index"]).rename(
-            columns={"index": "year", "value": "Gross Agricultural Product ($B)"}
+        
+    @st.cache_data
+    def get_fuel(city, fuel):
+        """연료별 데이터 불러오기"""
+        conn = pymysql.connect(
+            host="222.112.208.67",
+            # host="192.168.0.22",
+            user="team_6",
+            passwd="123",
+            database="sk15_6team",
+            port=3306,
         )
+        cur = conn.cursor()
+
+        def get_sql(query):
+            cur.execute(query)
+            return cur.fetchall()
+        
+        
+        #쿼리 생성
+        conditions = []
+
+        if fuel != '전체':
+            conditions.append(f"fuel_type IN ('{fuel}')")
+
+        if city != '전체':
+            conditions.append(f"region IN ('{city}')")
+
+        where_clause = " AND ".join(conditions)
+
+        # 조건이 없으면 WHERE 생략
+        fuel_query =  get_sql(f"""
+            SELECT *
+            FROM fuel_stats f
+            {"WHERE " + where_clause if where_clause else ""}
+        """)
+        
+        
+        columns_query = get_sql("DESC fuel_stats")
+        col = [desc[0] for desc in columns_query]
+
+        df_fuel = pd.DataFrame(fuel_query, columns=col)
+
+        # 소계만 가져오기 , 날짜 처리
+        df_fuel = df_fuel[df_fuel['vehicle_type'] == '소계'].drop(['vehicle_type'], axis=1)
+        df_fuel.reset_index(drop=True, inplace=True)
+        df_fuel["ym"] = pd.to_datetime(df_fuel["ym"], errors="coerce").dt.strftime("%Y-%m")
+        return df_fuel
+        
+
+
+    # ----------------------------- selectbox로 조건 선택 ----------------------------- #
+
+    # if selection == 
+    col1, col2 = st.columns(2)
+
+    with col2:
+        city = st.selectbox("지역 선택", city_list, key="city_list")
+        search_clicked = st.button("조회")
+
+    with col1:
+        selection = st.selectbox("조건 선택", ["선택하세요", "지역별", "차종별", "연료별", "성별별"], key="selection")
+        if selection == "지역별":
+            sex = st.selectbox("시군구 선택", gu_list)
+        elif selection == "차종별":
+            age = st.selectbox("차종별 선택", cartype_list)
+        elif selection == "연료별":
+            fuel = st.selectbox("연료별 선택", fuel_list)
+        elif selection == "성별별":
+            sex = st.selectbox("성별 선택", sex_list)
+        elif selection == "선택하세요":
+            st.info("조건을 선택해주세요.")
+            
+            
+    if selection == "연료별" and search_clicked:
+        df_fuel = get_fuel(city, fuel)
+        st.write("### 📊 요약 통계")
+        st.dataframe(df_fuel, use_container_width=True)
+
         chart = (
-            alt.Chart(data)
+            alt.Chart(df_fuel)
             .mark_bar()
             .encode(
-                x="year:T",
-                y=alt.Y("Gross Agricultural Product ($B):Q", stack=None),
-                color="Region:N",
+                x=alt.X("ym:T", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
+                y=alt.Y("registration_count:Q", title=""),
+                color=alt.Color("fuel_type:N", title=""),
+                tooltip=["ym:T",'fuel_type:N', "registration_count:Q"]
             )
+            
         )
         st.altair_chart(chart, use_container_width=True)
+        
+        
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('<br>', unsafe_allow_html=True)
+
+    # 데이터 가져오기, 그래프 출력 부분 카드 스타일 적용
+    st.markdown('', unsafe_allow_html=True)
+
+
 except URLError as e:
     st.error(
         """
@@ -158,7 +214,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<br>', unsafe_allow_html=True)
 
-# 엑셀 다운로드 카드 스타일 적용
+ # ----------------------------- 엑셀 다운로드 카드 스타일 적용 ---------------------------- #
+ 
 st.markdown('', unsafe_allow_html=True)
 st.markdown("### 📥 엑셀 파일 다운로드")
 st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
@@ -186,6 +243,10 @@ if st.button("엑셀 생성"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 st.markdown('</div>', unsafe_allow_html=True)
+
+
+
+# ----------------------------------- 사이드바 ----------------------------------- #
 
 st.sidebar.header("전국 자동차 등록 현황")
 st.sidebar.markdown("### 🛠️ 사용법")

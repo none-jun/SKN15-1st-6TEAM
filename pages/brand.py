@@ -23,6 +23,11 @@ st.markdown(
         font-weight: 700;
         margin-bottom: 0.2rem;
     }
+    h3 {
+        padding-top : 50px;
+        padding-bottom : 30px;
+        
+    }
     /* info 박스 스타일 */
     .stAlert > div {
         background-color: #eaf4fc !important;
@@ -119,7 +124,8 @@ brand_idx = [
 def get_brand_df(brand_list):
     """DB에서 선택 브랜드 데이터 불러오기"""
     conn = pymysql.connect(
-        host="192.168.0.22",
+        host="222.112.208.67",
+        # host="192.168.0.22",
         user="team_6",
         passwd="123",
         database="sk15_6team",
@@ -166,9 +172,10 @@ if search_clicked:
             df["ym"] = pd.to_datetime(df["ym"], errors="coerce")
             df["ym"] = df["ym"].dt.strftime("%Y-%m")
 
-            st.markdown("")
+            
             st.markdown("### 📊 요약 통계표")
             st.dataframe(df, use_container_width=True)
+            st.write('### 📈연도별 브랜드 판매량')
 
             # Altair 차트 생성
             chart = (
@@ -185,7 +192,7 @@ if search_clicked:
                     tooltip=["ym:T", "brand:N", "sales_count:Q"],
                 )
                 .properties(
-                    width=1100, height=600, title="연도별 브랜드 판매량 시계열 차트"
+                    width=1100, height=600, title=""
                 )
                 # .configure_title(
                 #     fontSize=10, fontWeight="bold", anchor="start", color="#2c3e50"
@@ -198,90 +205,35 @@ if search_clicked:
 # -------------------------------- 원 차트 만드는 부분 ------------------------------- #
                         
         
-
+            # 데이터 전처리
+            st.write('### 🌐연도별 국내/해외 판매량')
             df["year"] = pd.to_datetime(df["ym"]).dt.year
-            pie_data = df.groupby(["year", "origin_type"])["sales_count"].sum().reset_index()
+            bar_data = df.groupby(["year", "origin_type"])["sales_count"].sum().reset_index()
 
-            # 연도별 원형차트 여러 개
-            years = pie_data["year"].unique()
+            # 막대 그래프
+            bar_chart = (
+                alt.Chart(bar_data)
+                .mark_bar()
+                .encode(
+                    x=alt.X("year:O", title="연도"),
+                    y=alt.Y("sales_count:Q", title="판매량"),
+                    color=alt.Color("origin_type:N", title="유형"),
+                    tooltip=["year:O", "origin_type:N", "sales_count:Q"]
+                )
+                .properties(
+                    title="",
+                    width=700,
+                    height=400
+                )
+                .configure_title(
+                    fontSize=18,
+                    anchor="start"
+                )
+            )
 
-            st.write('### 연도별 국내/해외 판매량 비교')
+            st.altair_chart(bar_chart, use_container_width=True)
 
-            n_per_row = 3
-            for i in range(0, len(years), n_per_row):
-                cols = st.columns(n_per_row)
-                for j, year in enumerate(years[i:i + n_per_row]):
-                    with cols[j]:
-                        filtered = pie_data[pie_data["year"] == year].copy()
-                        total = filtered["sales_count"].sum()
-                        filtered["percent"] = (filtered["sales_count"] / total * 100).round(1).astype(str) + '%'
 
-                        base = alt.Chart(filtered).encode(
-                            color=alt.Color("origin_type:N", title="유형"),
-                            tooltip=["origin_type:N", "sales_count:Q"]
-                        )
-                        
-                        pie = base.mark_arc(opacity=0.7).encode(
-                            theta=alt.Theta("sales_count:Q", title="판매량"),
-                        )
-                        
-                        # 텍스트 위치: 중간 각도 구해서 radius 지정
-                        text = base.mark_text(radius=100, size=10).encode(
-                            theta=alt.Theta("sales_count:Q", stack="center"),
-                            text="percent"
-                        )
-                        
-                        pie_chart = (pie + text).properties(
-                            title=f"{year}년",
-                            width=250,
-                            height=250
-                        ).configure_title(
-                            fontSize=14,
-                            anchor="middle",
-                            dy=20
-                        )
-                        
-                        st.altair_chart(pie_chart, use_container_width=True)
-
-                    
-# ------------------------------ 원형 차트 막대그래프 버전 ------------------------------ #
-                    
-                    
-            # df["year"] = pd.to_datetime(df["ym"]).dt.year
-            # bar_data = df.groupby(["year", "origin_type"])["sales_count"].sum().reset_index()
-            # years = bar_data["year"].unique()
-
-            # st.write('### 연도별 국내/해외 판매량 비교')
-
-            # n_per_row = 3
-            # for i in range(0, len(years), n_per_row):
-            #     cols = st.columns(n_per_row)
-            #     for j, year in enumerate(years[i:i + n_per_row]):
-            #         with cols[j]:
-            #             filtered = bar_data[bar_data["year"] == year]
-            #             bar_chart = (
-            #                 alt.Chart(filtered)
-            #                 .mark_bar(opacity=0.7)
-            #                 .encode(
-            #                     x=alt.X("origin_type:N", title="유형"),
-            #                     y=alt.Y("sales_count:Q", title="판매량"),
-            #                     color=alt.Color("origin_type:N", legend=None),
-            #                     tooltip=["origin_type:N", "sales_count:Q"]
-            #                 )
-            #                 .properties(
-            #                     title=f"{year}년",
-            #                     width=250,
-            #                     height=250
-            #                 )
-            #                 .configure_title(
-            #                     fontSize=14,
-            #                     anchor="middle"
-            #                 )
-            #             )
-            #             st.altair_chart(bar_chart, use_container_width=True)
-
-                                
-                        
 
         except URLError as e:
             st.error(f"인터넷 연결 오류: {e.reason}")
