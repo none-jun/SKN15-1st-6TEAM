@@ -1,234 +1,36 @@
 import streamlit as st
 
+st.set_page_config(page_title="자동차 통계 홈", layout="wide")
 
-def intro():
-    import streamlit as st
+st.markdown("<h1 style='text-align: center;'>🚘 내게 맞는 자동차 통계, 어디서부터 봐야 할지 막막하셨죠?</h1>", unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: #4A6AD0;'>브랜드별 통계와 전국 등록현황을 한눈에 비교하세요.</h2>", unsafe_allow_html=True)
 
-    st.write("# Welcome to Streamlit! 👋")
-    st.sidebar.success("Select a demo above.")
+st.markdown("---")
 
-    st.info(
-        """
-        
-        전국 자동차 등록 현황을 포함한 기업 대상의 정보 조회 및 자주 묻는 질문(FAQ)을 통합 제공하는 웹 기반 정보 시스템 개발"
+spacer1, col1, col2, spacer2 = st.columns([0.1, 1, 1, 0.1])
 
-        즉,
+with col1:
+    st.image("https://img.icons8.com/external-flatart-icons-outline-flatarticons/512/external-car-car-service-flatart-icons-outline-flatarticons.png", width=80)
+    st.markdown("<h3 style='margin-top:10px;'>🚗 브랜드별 판매 통계</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    
+국내외 자동차 브랜드별 판매 실적
+월별 비교, 점유율 추세 시각화
+인기 브랜드와 하락 브랜드 확인
+""")
+st.button("👉 브랜드 통계 보러가기", use_container_width=True)
 
-        자동차 등록 통계 제공
+with col2:
+    st.image("https://img.icons8.com/ios-filled/500/region-code.png", width=80)
+    st.markdown("<h3 style='margin-top:10px;'>📍 전국 등록 현황</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    
+시도/시군구별 차량 등록 대수
+차종별 등록 현황 (승용, 승합, 화물 등)
+지역별 차량 특성 파악 가능
+""")
+st.button("👉 지역 통계 보러가기", use_container_width=True)
 
-        기업 FAQ 검색 제공
+st.markdown("---")
 
-        통합된 웹 시스템 또는 포털 형태의 서비스
-        
-        해야할 것 : 
-        1. db 구조 그리기
-        2. 데이터 db에 넣기
-        3. 기능 정의
-        4. 디자인
-        5. 구현
-        6. 평가 &  수정
-    """
-    )
-
-
-def mapping_demo():
-    import streamlit as st
-    import pandas as pd
-    import pydeck as pdk
-
-    from urllib.error import URLError
-
-    st.markdown(f"# {list(page_names_to_funcs.keys())[2]}")
-    st.write(
-        """
-        This demo shows how to use
-[`st.pydeck_chart`](https://docs.streamlit.io/develop/api-reference/charts/st.pydeck_chart)
-to display geospatial data.
-"""
-    )
-
-    @st.cache_data
-    def from_data_file(filename):
-        url = (
-            "http://raw.githubusercontent.com/streamlit/"
-            "example-data/master/hello/v1/%s" % filename
-        )
-        return pd.read_json(url)
-
-    try:
-        ALL_LAYERS = {
-            "Bike Rentals": pdk.Layer(
-                "HexagonLayer",
-                data=from_data_file("bike_rental_stats.json"),
-                get_position=["lon", "lat"],
-                radius=200,
-                elevation_scale=4,
-                elevation_range=[0, 1000],
-                extruded=True,
-            ),
-            "Bart Stop Exits": pdk.Layer(
-                "ScatterplotLayer",
-                data=from_data_file("bart_stop_stats.json"),
-                get_position=["lon", "lat"],
-                get_color=[200, 30, 0, 160],
-                get_radius="[exits]",
-                radius_scale=0.05,
-            ),
-            "Bart Stop Names": pdk.Layer(
-                "TextLayer",
-                data=from_data_file("bart_stop_stats.json"),
-                get_position=["lon", "lat"],
-                get_text="name",
-                get_color=[0, 0, 0, 200],
-                get_size=15,
-                get_alignment_baseline="'bottom'",
-            ),
-            "Outbound Flow": pdk.Layer(
-                "ArcLayer",
-                data=from_data_file("bart_path_stats.json"),
-                get_source_position=["lon", "lat"],
-                get_target_position=["lon2", "lat2"],
-                get_source_color=[200, 30, 0, 160],
-                get_target_color=[200, 30, 0, 160],
-                auto_highlight=True,
-                width_scale=0.0001,
-                get_width="outbound",
-                width_min_pixels=3,
-                width_max_pixels=30,
-            ),
-        }
-        st.sidebar.markdown("### Map Layers")
-        selected_layers = [
-            layer
-            for layer_name, layer in ALL_LAYERS.items()
-            if st.sidebar.checkbox(layer_name, True)
-        ]
-        if selected_layers:
-            st.pydeck_chart(
-                pdk.Deck(
-                    map_style="mapbox://styles/mapbox/light-v9",
-                    initial_view_state={
-                        "latitude": 37.76,
-                        "longitude": -122.4,
-                        "zoom": 11,
-                        "pitch": 50,
-                    },
-                    layers=selected_layers,
-                )
-            )
-        else:
-            st.error("Please choose at least one layer above.")
-    except URLError as e:
-        st.error(
-            """
-            **This demo requires internet access.**
-
-            Connection error: %s
-        """
-            % e.reason
-        )
-
-
-def plotting_demo():
-    import streamlit as st
-    import time
-    import numpy as np
-
-    st.markdown(f"# {list(page_names_to_funcs.keys())[1]}")
-    st.write(
-        """
-        This demo illustrates a combination of plotting and animation with
-Streamlit. We're generating a bunch of random numbers in a loop for around
-5 seconds. Enjoy!
-"""
-    )
-
-    progress_bar = st.sidebar.progress(0)
-    status_text = st.sidebar.empty()
-    last_rows = np.random.randn(1, 1)
-    chart = st.line_chart(last_rows)
-
-    for i in range(1, 101):
-        new_rows = last_rows[-1, :] + np.random.randn(5, 1).cumsum(axis=0)
-        status_text.text("%i%% Complete" % i)
-        chart.add_rows(new_rows)
-        progress_bar.progress(i)
-        last_rows = new_rows
-        time.sleep(0.05)
-
-    progress_bar.empty()
-
-    # Streamlit widgets automatically run the script from top to bottom. Since
-    # this button is not connected to any other logic, it just causes a plain
-    # rerun.
-    st.button("Re-run")
-
-
-def data_frame_demo():
-    import streamlit as st
-    import pandas as pd
-    import altair as alt
-
-    from urllib.error import URLError
-
-    st.markdown(f"# {list(page_names_to_funcs.keys())[3]}")
-    st.write(
-        """
-        This demo shows how to use `st.write` to visualize Pandas DataFrames.
-
-(Data courtesy of the [UN Data Explorer](http://data.un.org/Explorer.aspx).)
-"""
-    )
-
-    @st.cache_data
-    def get_UN_data():
-        AWS_BUCKET_URL = "http://streamlit-demo-data.s3-us-west-2.amazonaws.com"
-        df = pd.read_csv(AWS_BUCKET_URL + "/agri.csv.gz")
-        return df.set_index("Region")
-
-    try:
-        df = get_UN_data()
-        countries = st.multiselect(
-            "Choose countries", list(df.index), ["China", "United States of America"]
-        )
-        if not countries:
-            st.error("Please select at least one country.")
-        else:
-            data = df.loc[countries]
-            data /= 1000000.0
-            st.write("### Gross Agricultural Production ($B)", data.sort_index())
-
-            data = data.T.reset_index()
-            data = pd.melt(data, id_vars=["index"]).rename(
-                columns={"index": "year", "value": "Gross Agricultural Product ($B)"}
-            )
-            chart = (
-                alt.Chart(data)
-                .mark_area(opacity=0.3)
-                .encode(
-                    x="year:T",
-                    y=alt.Y("Gross Agricultural Product ($B):Q", stack=None),
-                    color="Region:N",
-                )
-            )
-            st.altair_chart(chart, use_container_width=True)
-    except URLError as e:
-        st.error(
-            """
-            **This demo requires internet access.**
-
-            Connection error: %s
-        """
-            % e.reason
-        )
-
-
-page_names_to_funcs = {
-    "—": intro,
-    "Plotting Demo": plotting_demo,
-    "Mapping Demo": mapping_demo,
-    "DataFrame Demo": data_frame_demo,
-}
-
-demo_name = st.sidebar.selectbox("Choose a demo", page_names_to_funcs.keys())
-page_names_to_funcs[demo_name]()
+st.markdown("<h4 style='text-align: center;'>🚀 데이터 기반으로 자동차 시장을 쉽게 이해해보세요!</h4>", unsafe_allow_html=True)
