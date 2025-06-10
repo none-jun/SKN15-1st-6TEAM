@@ -68,7 +68,7 @@ city_list = ['전체','강원','경기','경남','경북','광주','대구','대
 # 구 리스트는 너무 많아서 밑에서 쿼리해서 가져옴
 cartype_list = ['전체',"승용차",'승합차','화물차','특수차량']
 fuel_list = ['전체','CNG','LNG','경유','기타연료','등유','수소','알코올','엘피지','전기','총계','태양열','하이브리드(CNG+전기)','하이브리드(LNG+전기)','하이브리드(LPG+전기)','하이브리드(경유+전기)','하이브리드(휘발유+전기)','휘발유','수소전기']
-sex_list = ['전체',"남", "여"]
+sex_list = ['전체',"남성", "여성"]
 
 
 st.markdown("# 🚗 전국 자동차 등록 현황", unsafe_allow_html=True)
@@ -273,47 +273,38 @@ try:
 
         # -------------------------------- 성별 선택 시 함수 -------------------------------- #
  
-    # @st.cache_data
-    # def get_sex(city, sex):
-    #     conn = get_connection()
+    @st.cache_data
+    def get_sex(city, sex):
+        conn = get_connection()
 
-    #     # 조건 설정
-    #     conditions = []
-    #     if city != '전체':
-    #         conditions.append(f"region IN ('{city}')")
-        
-    #     if sex =='남성':
+        # 조건 설정
+        conditions = ["CHAR_LENGTH(age_group) > 2"]
+        if city != '전체':
+            conditions.append(f"region IN ('{city}')")
+        if sex != '전체':
+            conditions.append(f"gender IN ('{sex}')")
             
-    #     elif sex == '여성':
-            
-    #     else:
-            
+        where_clause = " AND ".join(conditions)
 
-    #     where_clause = " AND ".join(conditions)
+        # 쿼리 실행
+        query_result = run_query(conn, f"""
+            SELECT *
+            FROM vehicle_by_demographic
+            {"WHERE " + where_clause if where_clause else ""}
+        """)
 
-    #     # 쿼리 실행
-    #     query_result = run_query(conn, f"""
-    #         SELECT f.ym, f.region, {sql_col}
-    #         FROM vehicle_region f
-    #         {"WHERE " + where_clause if where_clause else ""}
-    #     """)
+        # 올바른 테이블에서 컬럼 정보 가져오기
+        columns_query = run_query(conn, "DESC vehicle_by_demographic")
+        col = [desc[0] for desc in columns_query]
 
-    #     # 컬럼명 지정
-    #     cols = ['ym', 'region'] + col_names
+        # 데이터프레임 생성
+        df_sex = pd.DataFrame(query_result, columns=col)
 
-    #     # 데이터프레임 생성
-    #     df_type = pd.DataFrame(query_result, columns=cols)
+        # 날짜 포맷 처리
+        df_sex = df_sex.drop('id', axis =1)
+        df_sex["ym"] = pd.to_datetime(df_sex["ym"], errors="coerce").dt.strftime("%Y-%m")
 
-    #     # 통합 total 컬럼 생성
-    #     if cartype == '전체':
-    #         df_type["total"] = df_type[["passenger", "ven", "truck", "special"]].sum(axis=1)
-    #     else:
-    #         df_type = df_type.rename(columns={col_names[0]: "total"})
-
-    #     # 날짜 포맷 처리
-    #     df_type["ym"] = pd.to_datetime(df_type["ym"], errors="coerce").dt.strftime("%Y-%m")
-
-    #     return df_type
+        return df_sex
 
     # ----------------------------- selectbox로 조건 선택 ----------------------------- #
 
@@ -438,7 +429,26 @@ try:
         
         except Exception as e:
             st.error(f"에러 발생: {e}")
-        
+    
+    # ------------------------------- 성별 구분 클릭 시 동작 ------------------------------ #
+
+    if selection == "성별별" and search_clicked:
+        df_sex = get_sex(city, sex)
+        st.write("### 📊 요약 통계")
+        st.dataframe(df_sex, use_container_width=True)
+
+        chart = (
+            alt.Chart(df_sex)
+            .mark_bar()
+            .encode(
+                x=alt.X("gender:N", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
+                y=alt.Y("count:Q", title=""),
+                color=alt.Color("age_group:N", title=""),
+                tooltip=["gender:N",'age_group:N', "count:Q"]
+            )
+            
+        )
+        st.altair_chart(chart, use_container_width=True)
         
         
 
@@ -460,6 +470,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<br>', unsafe_allow_html=True)
 
 
+
+
  # ----------------------------- 엑셀 다운로드 카드 스타일 적용 ---------------------------- #
  
 st.markdown('', unsafe_allow_html=True)
@@ -474,21 +486,21 @@ df = pd.DataFrame(
     }
 )
 
-def to_excel_bytes(df):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        df.to_excel(writer, index=False, sheet_name="Sheet1")
-    return output.getvalue()
+# def to_excel_bytes(df):
+#     output = io.BytesIO()
+#     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+#         df.to_excel(writer, index=False, sheet_name="Sheet1")
+#     return output.getvalue()
 
-if st.button("엑셀 생성"):
-    excel_bytes = to_excel_bytes(df_fuel)
-    st.download_button(
-        label="📥 엑셀 다운로드",
-        data=excel_bytes,
-        file_name="vehicle_data.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-st.markdown('</div>', unsafe_allow_html=True)
+# if st.button("엑셀 생성"):
+#     excel_bytes = to_excel_bytes(df_fuel)
+#     st.download_button(
+#         label="📥 엑셀 다운로드",
+#         data=excel_bytes,
+#         file_name="vehicle_data.xlsx",
+#         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+#     )
+# st.markdown('</div>', unsafe_allow_html=True)
 
 
 
