@@ -79,8 +79,7 @@
 
 ## 4. ERD
 
- 
-
+![단위 6팀](https://github.com/user-attachments/assets/1ac021ce-d86c-41a7-afbb-23dd2e295875)
 
 
  
