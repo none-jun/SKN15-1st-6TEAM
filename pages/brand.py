@@ -23,6 +23,7 @@ st.markdown(
         font-weight: 700;
         margin-bottom: 0.2rem;
     }
+
     h3 {
         padding-top : 50px;
         padding-bottom : 30px;
@@ -172,10 +173,12 @@ if search_clicked:
             df["ym"] = pd.to_datetime(df["ym"], errors="coerce")
             df["ym"] = df["ym"].dt.strftime("%Y-%m")
 
+
             
             st.markdown("### 📊 요약 통계표")
             st.dataframe(df, use_container_width=True)
             st.write('### 📈연도별 브랜드 판매량')
+
 
             # Altair 차트 생성
             chart = (
@@ -192,7 +195,9 @@ if search_clicked:
                     tooltip=["ym:T", "brand:N", "sales_count:Q"],
                 )
                 .properties(
+
                     width=1100, height=600, title=""
+
                 )
                 # .configure_title(
                 #     fontSize=10, fontWeight="bold", anchor="start", color="#2c3e50"

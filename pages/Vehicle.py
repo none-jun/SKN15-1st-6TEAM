@@ -35,6 +35,7 @@ st.markdown(
         padding-bottom : 30px;
         
     }
+
     /* info 박스 스타일 */
     .stAlert > div {
         background-color: #eaf4fc !important;
@@ -51,6 +52,7 @@ st.markdown(
         padding: 8px 20px;
         font-weight: 600;
         margin-top: 25px;
+
         transition: background-color 0.3s ease;
     }
     div.stButton > button:hover {
@@ -62,12 +64,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
 city_list = ['전체','강원','경기','경남','경북','광주','대구','대전','부산','서울','세종','울산','인천','전남','전북','제주','충남','충북']
 gu_list = ['전체',"동작구", "부산진구", "광산구"]
 cartype_list = ['전체',"화물차", "승용차", "소형차"]
 fuel_list = ['전체','CNG','LNG','경유','기타연료','등유','수소','알코올','엘피지','전기','총계','태양열','하이브리드(CNG+전기)','하이브리드(LNG+전기)','하이브리드(LPG+전기)','하이브리드(경유+전기)','하이브리드(휘발유+전기)','휘발유','수소전기']
 sex_list = ['전체',"남", "여"]
+
 
 st.markdown("# 🚗 전국 자동차 등록 현황", unsafe_allow_html=True)
 
@@ -214,6 +216,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<br>', unsafe_allow_html=True)
 
+
  # ----------------------------- 엑셀 다운로드 카드 스타일 적용 ---------------------------- #
  
 st.markdown('', unsafe_allow_html=True)
@@ -243,6 +246,7 @@ if st.button("엑셀 생성"):
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 
