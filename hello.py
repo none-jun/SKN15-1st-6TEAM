@@ -37,6 +37,7 @@ st.markdown("""
     margin: 0 auto;
     padding: 60px 0;
     flex-wrap: wrap;
+    gap: 60px;
 }
 .section.reverse {
     flex-direction: row-reverse;
@@ -59,8 +60,18 @@ st.markdown("""
 .image-box {
     flex-shrink: 0;
 }
+@media screen and (max-width: 900px) {
+    .section {
+        flex-direction: column !important;
+        text-align: center;
+    }
+    .image-box, .text-box {
+        margin-bottom: 30px;
+    }
+}
 .image-box img {
-    max-width: 512px;
+    width: 100%;
+    max-width: 480px;
     height: auto;
     background-color: #eee;
 }
@@ -76,7 +87,7 @@ st.markdown(f"""
     </div>
     <!-- ✅ 브랜드: 이미지 오른쪽 -->
     <!-- 브랜드별 판매 통계: 이미지 오른쪽 / 텍스트 왼쪽 -->
-    <div class="section reverse">
+    <div class="section">
         <div class="text-box">
             <div style="color:#3478f6; font-size:16px; font-weight:600; margin-bottom:10px;">브랜드별 판매 통계</div>
             <div style="font-size:30px; font-weight:700; line-height:1.5;">
@@ -84,8 +95,8 @@ st.markdown(f"""
                 점유율 흐름을 한눈에 확인해보세요.
             </div>
             <div style="margin-top:20px;">
-                <a class="link-button" href="/brand" target="_self">
-                    자세히 보기 →
+                <a href="/brand" target="_self" style="display:inline-block; padding:10px 18px; background-color:#3478f6; color:white; border-radius:6px; text-decoration:none; font-weight:600; margin-top:20px;">
+                자세히 보기 →
                 </a>
             </div>
         </div>  <!-- ✅ text-box 닫힘 -->
