@@ -110,8 +110,8 @@ st.markdown(f"""
             <img src="data:image/png;base64,{img_base64_2}" />
         </div>
         <div class="text-box">
-            <div style="color:#3478f6; font-size:30px; font-weight:600; margin-bottom:30px;">전국 등록 현황</div>
-            <div style="font-size:20px; font-weight:700; line-height:1.5;">
+            <div style="color:#3478f6; font-size:35px; font-weight:600; margin-bottom:16px;">🗺️전국 등록 현황</div>
+            <div style="font-size:20px; font-weight:700; line-height:1.2;">
                 지역별 등록 현황을<br>
                 차종과 지역 특성에 따라 비교해보세요.
             </div>
