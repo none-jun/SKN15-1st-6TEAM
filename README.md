@@ -81,7 +81,7 @@
 
 ## 4. ERD
 
-![단위 6팀](https://github.com/user-attachments/assets/1ac021ce-d86c-41a7-afbb-23dd2e295875)
+![Image](https://github.com/user-attachments/assets/971f2a67-ace3-4d3c-938e-12257684c9ed)
 
 
  
