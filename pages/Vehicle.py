@@ -522,35 +522,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 
-# ----------------------------- 엑셀 다운로드 카드 스타일 적용 ---------------------------- #
-
-st.markdown("", unsafe_allow_html=True)
-st.markdown("### 📥 엑셀 파일 다운로드")
-st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
-
-df = pd.DataFrame(
-    {
-        "이름": ["홍길동", "김철수", "이영희"],
-        "지역": ["서울", "부산", "대전"],
-        "등록 차량 수": [1200, 850, 430],
-    }
-)
-
-# def to_excel_bytes(df):
-#     output = io.BytesIO()
-#     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-#         df.to_excel(writer, index=False, sheet_name="Sheet1")
-#     return output.getvalue()
-
-# if st.button("엑셀 생성"):
-#     excel_bytes = to_excel_bytes(df_fuel)
-#     st.download_button(
-#         label="📥 엑셀 다운로드",
-#         data=excel_bytes,
-#         file_name="vehicle_data.xlsx",
-#         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-#     )
-# st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ----------------------------------- 사이드바 ----------------------------------- #
