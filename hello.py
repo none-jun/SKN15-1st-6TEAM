@@ -110,8 +110,8 @@ st.markdown(f"""
             <img src="data:image/png;base64,{img_base64_2}" />
         </div>
         <div class="text-box">
-            <div style="color:#3478f6; font-size:30px; font-weight:600; margin-bottom:30px;">전국 등록 현황</div>
-            <div style="font-size:20px; font-weight:700; line-height:1.5;">
+            <div style="color:#3478f6; font-size:35px; font-weight:600; margin-bottom:16px;">🗺️전국 등록 현황</div>
+            <div style="font-size:20px; font-weight:700; line-height:1.2;">
                 지역별 등록 현황을<br>
                 차종과 지역 특성에 따라 비교해보세요.
             </div>
@@ -122,76 +122,3 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
-
-
-
-import streamlit as st
-import pandas as pd
-import altair as alt
-import pymysql
-from urllib.error import URLError
-import numpy as np
-
-# 페이지 설정
-st.set_page_config(page_title="브랜드 및 모델별 판매 추이", page_icon="📊", layout="wide")
-
-# --- 스타일 커스텀 CSS ---
-st.markdown(
-    """
-    <style>
-    /* 배경색 및 폰트 */
-    .main {
-        background-color: #f9fafb;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    /* 헤더 스타일 */
-    h1 {
-        color: #0078D7;
-        font-weight: 700;
-        margin-bottom: 0.2rem;
-    }
-
-    h3 {
-        padding-top : 50px;
-        padding-bottom : 30px;
-        
-    }
-    /* info 박스 스타일 */
-    .stAlert > div {
-        background-color: #eaf4fc !important;
-        color: #666666 !important;
-        border-radius: 10px;
-        padding: 1rem;
-        font-size: 1.1rem;
-        
-    }
-    /* 멀티셀렉트 박스 스타일 */
-    .stMultiSelect > div[role="listbox"] {
-        min-height: 6rem;
-    }
-    /* 버튼 스타일 */
-    div.stButton > button {
-        background-color: #3178c6;
-        color: white;
-        font-weight: 600;
-        border-radius: 8px;
-        padding: 0.5rem 1.5rem;
-        margin-top: 25px;
-        transition: background-color 0.3s ease;
-    }
-    div.stButton > button:hover {
-        background-color: #255a9b;
-    }
-    /* 차트 제목 */
-    .vega-embed .title {
-        font-size: 1.5rem !important;
-        font-weight: 700 !important;
-        fill: #2c3e50 !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
