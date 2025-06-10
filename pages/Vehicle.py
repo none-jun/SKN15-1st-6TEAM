@@ -4,6 +4,7 @@ import altair as alt
 from urllib.error import URLError
 import io
 import pymysql
+import xlsxwriter 
 
 st.set_page_config(page_title="Vehicle", page_icon="🌍", layout="wide")
 
@@ -140,8 +141,15 @@ st.markdown("### 🔍 조회하기")
 # -------------------------- 지역,차종,연료,성별 선택 부분 각각 함수 ------------------------- #
 
 try:
+    
+    def to_excel_bytes(df):
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df.to_excel(writer, index=False, sheet_name="Sheet1")
+        return output.getvalue()
+
     # -------------------------------- 연료 선택 시 함수 -------------------------------- #
-    # @st.cache_resource
+    @st.cache_resource
     def get_connection():
         """DB 커넥션 생성 및 캐싱"""
         return pymysql.connect(
@@ -408,6 +416,17 @@ try:
             )
         )
         st.altair_chart(chart, use_container_width=True)
+        
+        st.markdown("")
+        st.markdown("### 📥 엑셀 파일 다운로드")
+        st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
+        excel_bytes = to_excel_bytes(df_fuel)
+        st.download_button(
+            label="📥 엑셀 다운로드",
+            data=excel_bytes,
+            file_name="fuel.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
     # ------------------------------ 지역 > 구 클릭 시 동작 ------------------------------ #
 
@@ -440,6 +459,17 @@ try:
         )
 
         st.altair_chart(chart + labels, use_container_width=True)
+        
+        st.markdown("")
+        st.markdown("### 📥 엑셀 파일 다운로드")
+        st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
+        excel_bytes = to_excel_bytes(df_loc)
+        st.download_button(
+            label="📥 엑셀 다운로드",
+            data=excel_bytes,
+            file_name="location_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
     # ------------------------------ 차종별 클릭 시 동작 ------------------------------ #
 
@@ -477,6 +507,18 @@ try:
             )
 
             st.altair_chart(chart + labels, use_container_width=True)
+            
+            st.markdown("")
+            st.markdown("### 📥 엑셀 파일 다운로드")
+            st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
+            
+            excel_bytes = to_excel_bytes(df_type)
+            st.download_button(
+                label="📥 엑셀 다운로드",
+                data=excel_bytes,
+                file_name="vehicle_type_data.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
 
         except Exception as e:
             st.error(f"에러 발생: {e}")
@@ -503,6 +545,17 @@ try:
             )
         )
         st.altair_chart(chart, use_container_width=True)
+        
+        st.markdown("")
+        st.markdown("### 📥 엑셀 파일 다운로드")
+        st.write("필요한 데이터를 엑셀 파일로 다운로드할 수 있습니다.")
+        excel_bytes = to_excel_bytes(df_sex)
+        st.download_button(
+            label="📥 엑셀 다운로드",
+            data=excel_bytes,
+            file_name="sex_data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
     st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
@@ -520,6 +573,11 @@ except URLError as e:
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
+
+
+# ----------------------------- 엑셀 다운로드 카드 스타일 적용 ---------------------------- #
+
+st.markdown("", unsafe_allow_html=True)
 
 
 
