@@ -6,7 +6,7 @@ from urllib.error import URLError
 import numpy as np
 
 # 페이지 설정
-st.set_page_config(page_title="브랜드별 판매 추이", page_icon="📊", layout="wide")
+st.set_page_config(page_title="브랜드 및 모델별 판매 추이", page_icon="📊", layout="wide")
 
 # --- 스타일 커스텀 CSS ---
 st.markdown(
@@ -67,17 +67,17 @@ st.markdown(
 )
 
 # 헤더
-st.markdown("# 📊 브랜드별 판매 추이")
-st.sidebar.header("브랜드별 판매 추이 (연월)")
+st.markdown("# 📊 브랜드 및 모델별 판매 추이")
+st.sidebar.header("브랜드 및 모델 판매 추이 (연월)")
 
 # 설명 박스 (info)
 st.write("")  # 여백
 st.info(
     """
     **다나와 사이트 데이터 기반** 
-    - 브랜드별 판매 추이 (연월 단위)  
+    - 브랜드 및 모델별 판매 추이 (연월 단위)  
     - 조회 기간: 2023.01 ~ 2025.05  
-    - 최소 1개 이상 브랜드 선택 후 '조회' 버튼 클릭  
+    - 최소 1개 이상 브랜드 및 모델 선택 후 '조회' 버튼 클릭  
     """
 )
 
@@ -186,31 +186,6 @@ def get_model_df(model_list):
     conn.close()
     return pd.DataFrame(rows, columns=col)
 
-# 레이아웃 : 브랜드 선택 + 조회 버튼을 한 줄에 배치
-
-# with st.form("search_form"):
-#     col1, col2 = st.columns([5, 1])
-#     with col1:
-#         brand_list = st.multiselect("브랜드 선택", brand_idx)
-#     with col2:
-#         search_clicked = st.form_submit_button("조회")
-
-# # 모델 선택은 form 밖에서 실시간으로 반응
-# if brand_list:
-#     model_list = load_models_by_brands(brand_list)
-#     model_options = ['전체'] + model_list
-
-#     selected_models = st.multiselect("모델 선택", model_options)
-
-#     # '전체' 선택 시 실제 모델 전체로 대체
-#     if '전체' in selected_models or not selected_models:
-#         filtered_models = model_list
-#     else:
-#         filtered_models = selected_models
-# else:
-#     model_list = []
-#     filtered_models = []
-#     selected_models = []
 col1, col2 = st.columns([5, 5])
 
 with col1:
@@ -254,9 +229,9 @@ if search_clicked:
             )
 
             
-            st.markdown("### 📊 브랜드 요약 통계표")
+            st.markdown("### 📊 브랜드 누적 판매 순위")
             st.dataframe(brand_df_sum, use_container_width=True)
-            st.write('### 📈연도별 브랜드 판매량')
+            st.write('### 📈월별 브랜드 판매량')
 
 
             # Altair 차트 생성
@@ -299,9 +274,9 @@ if search_clicked:
                     .sort_values(by="sales_count", ascending=False)
                 )
 
-                st.markdown("### 📊 모델 요약 통계표")
+                st.markdown("### 📊 모델 누적 판매 순위")
                 st.dataframe(model_df_sum, use_container_width=True)
-                st.write('### 📈연도별 모델 판매량')
+                st.write('### 📈월별 모델 판매량')
 
 
                 # Altair 차트 생성
@@ -373,7 +348,7 @@ if search_clicked:
 st.sidebar.markdown("### 🛠️ 사용법")
 st.sidebar.markdown(
     """
-- 원하는 브랜드를 여러 개 선택하세요.  
+- 원하는 브랜드와 모델을을 여러 개 선택하세요.  
 - 조회 버튼을 눌러 데이터를 불러옵니다.  
 - 요약 통계표와 시계열 차트를 확인할 수 있습니다.  
 - 데이터베이스 연결 상태에 따라 로딩 시간이 걸릴 수 있습니다.
