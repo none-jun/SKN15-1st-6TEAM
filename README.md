@@ -93,7 +93,7 @@
  
 
 ## 6. 수행결과(테스트/시연 페이지)
-
+![Image](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN15-1st-6TEAM/blob/main/image%203.png)
 
 
 ## 7. 한 줄 회고
