@@ -217,45 +217,103 @@ try:
     
     
     # -------------------------------- 차종 선택 시 함수 -------------------------------- #
-    get_cartype('서울','승용차')
+  
     @st.cache_data
     def get_cartype(city, cartype):
-        """지역별 데이터 불러오기"""
         conn = get_connection()
 
+        # 조건 설정
         conditions = []
         if city != '전체':
             conditions.append(f"region IN ('{city}')")
-            
+
+        # 차종별 SQL 컬럼 선택
         if cartype == '승용차':
             sql_col = 'f.passenger'
+            col_names = ['passenger']
         elif cartype == '승합차':
             sql_col = 'f.ven'
+            col_names = ['ven']
         elif cartype == '화물차':
             sql_col = 'f.truck'
+            col_names = ['truck']
         elif cartype == '특수차량':
             sql_col = 'f.special'
+            col_names = ['special']
         else:
-            sql_col = ['f.passenger', 'f.ven', 'f.truck', 'f.special']
-            sql_col = ", ".join(sql_col)
+            col_list = ['f.passenger', 'f.ven', 'f.truck', 'f.special']
+            sql_col = ', '.join(col_list)
+            col_names = ['passenger', 'ven', 'truck', 'special']
 
         where_clause = " AND ".join(conditions)
 
-        query = run_query(conn, f"""
+        # 쿼리 실행
+        query_result = run_query(conn, f"""
             SELECT f.ym, f.region, {sql_col}
             FROM vehicle_region f
             {"WHERE " + where_clause if where_clause else ""}
         """)
 
+        # 컬럼명 지정
+        cols = ['ym', 'region'] + col_names
 
-        df = pd.DataFrame(query)
+        # 데이터프레임 생성
+        df_type = pd.DataFrame(query_result, columns=cols)
 
-        # 소계만 가져오기 , 날짜 처리
-        # df_loc = df_loc[df_loc['vehicle_type'] == '소계'].drop(['vehicle_type'], axis=1)
-        # df_loc.reset_index(drop=True, inplace=True)
-        df["ym"] = pd.to_datetime(df["ym"], errors="coerce").dt.strftime("%Y-%m")
+        # 통합 total 컬럼 생성
+        if cartype == '전체':
+            df_type["total"] = df_type[["passenger", "ven", "truck", "special"]].sum(axis=1)
+        else:
+            df_type = df_type.rename(columns={col_names[0]: "total"})
 
-        return df
+        # 날짜 포맷 처리
+        df_type["ym"] = pd.to_datetime(df_type["ym"], errors="coerce").dt.strftime("%Y-%m")
+
+        return df_type
+
+        # -------------------------------- 성별 선택 시 함수 -------------------------------- #
+ 
+    # @st.cache_data
+    # def get_sex(city, sex):
+    #     conn = get_connection()
+
+    #     # 조건 설정
+    #     conditions = []
+    #     if city != '전체':
+    #         conditions.append(f"region IN ('{city}')")
+        
+    #     if sex =='남성':
+            
+    #     elif sex == '여성':
+            
+    #     else:
+            
+
+    #     where_clause = " AND ".join(conditions)
+
+    #     # 쿼리 실행
+    #     query_result = run_query(conn, f"""
+    #         SELECT f.ym, f.region, {sql_col}
+    #         FROM vehicle_region f
+    #         {"WHERE " + where_clause if where_clause else ""}
+    #     """)
+
+    #     # 컬럼명 지정
+    #     cols = ['ym', 'region'] + col_names
+
+    #     # 데이터프레임 생성
+    #     df_type = pd.DataFrame(query_result, columns=cols)
+
+    #     # 통합 total 컬럼 생성
+    #     if cartype == '전체':
+    #         df_type["total"] = df_type[["passenger", "ven", "truck", "special"]].sum(axis=1)
+    #     else:
+    #         df_type = df_type.rename(columns={col_names[0]: "total"})
+
+    #     # 날짜 포맷 처리
+    #     df_type["ym"] = pd.to_datetime(df_type["ym"], errors="coerce").dt.strftime("%Y-%m")
+
+    #     return df_type
 
     # ----------------------------- selectbox로 조건 선택 ----------------------------- #
 
@@ -293,7 +351,7 @@ try:
             .mark_bar()
             .encode(
                 x=alt.X("ym:T", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
-                y=alt.Y("registration_count:Q", title="" ,scale=alt.Scale(type="log")),
+                y=alt.Y("registration_count:Q", title=""),
                 color=alt.Color("fuel_type:N", title=""),
                 tooltip=["ym:T",'fuel_type:N', "registration_count:Q"]
             )
@@ -340,37 +398,46 @@ try:
     # ------------------------------ 차종별 클릭 시 동작 ------------------------------ #
 
     if selection == "차종별" and search_clicked:
-        df = get_cartype(city, cartype)
-        st.write("### 📊 요약 통계")
-        st.dataframe(df, use_container_width=True)
+        try:
+            df_type = get_cartype(city, cartype)
+            st.write("### 📊 요약 통계")
+            st.dataframe(df_type, use_container_width=True)
+            # st.write(df_type)  # 확인용
 
-        chart = (
-            alt.Chart(df)
-            .mark_bar()
-            .encode(
-                x=alt.X("ym:T", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
-                y=alt.Y("total:Q", title="", scale=alt.Scale(type="log")),
-                color=alt.Color("district:N", title=""),
-                tooltip=["ym:T",'district:N', "total:Q"]
+            # 0 이하 제거 (로그 스케일 대비)
+            df_type = df_type[df_type["total"] > 0]
+
+            chart = (
+                alt.Chart(df_type)
+                .mark_bar()
+                .encode(
+                    x=alt.X("ym:T", title="", axis=alt.Axis(labelFontSize=12, labelPadding=5)),
+                    y=alt.Y("total:Q", title="", scale=alt.Scale(type="log")),
+                    color=alt.Color("district:N", title=""),
+                    tooltip=["ym:T", "district:N", "total:Q"]
+                )
             )
-        )
-        labels = (
-            alt.Chart(df)
-            .mark_text(
-                align='center',
-                baseline='bottom',
-                dy=-2,  # 막대 위에 약간 띄움
-                fontSize=10
+
+            labels = (
+                alt.Chart(df_type)
+                .mark_text(
+                    align='center',
+                    baseline='bottom',
+                    dy=-2,
+                    fontSize=10
+                )
+                .encode(
+                    x="ym:T",
+                    y="total:Q",
+                    text=alt.Text("total:Q"),
+                    angle=alt.value(60)
+                )
             )
-            .encode(
-                x="ym:T",
-                y="total:Q",
-                text=alt.Text("total:Q")
-            )
-        )
-            
-        st.altair_chart(chart + labels, use_container_width=True)     
+
+            st.altair_chart(chart + labels, use_container_width=True)
         
+        except Exception as e:
+            st.error(f"에러 발생: {e}")
         
         
         
@@ -414,7 +481,7 @@ def to_excel_bytes(df):
     return output.getvalue()
 
 if st.button("엑셀 생성"):
-    excel_bytes = to_excel_bytes(df)
+    excel_bytes = to_excel_bytes(df_fuel)
     st.download_button(
         label="📥 엑셀 다운로드",
         data=excel_bytes,
