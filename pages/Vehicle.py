@@ -65,8 +65,8 @@ st.markdown(
 )
 
 city_list = ['전체','강원','경기','경남','경북','광주','대구','대전','부산','서울','세종','울산','인천','전남','전북','제주','충남','충북']
-gu_list = ['전체',"동작구", "부산진구", "광산구"]
-cartype_list = ['전체',"화물차", "승용차", "소형차"]
+# 구 리스트는 너무 많아서 밑에서 쿼리해서 가져옴
+cartype_list = ['전체',"승용차",'승합차','화물차','특수차량']
 fuel_list = ['전체','CNG','LNG','경유','기타연료','등유','수소','알코올','엘피지','전기','총계','태양열','하이브리드(CNG+전기)','하이브리드(LNG+전기)','하이브리드(LPG+전기)','하이브리드(경유+전기)','하이브리드(휘발유+전기)','휘발유','수소전기']
 sex_list = ['전체',"남", "여"]
 
@@ -98,49 +98,50 @@ st.markdown('<br>', unsafe_allow_html=True)
 st.markdown('', unsafe_allow_html=True)
 
 st.markdown("### 🔍 조회하기")
-
-
-# -------------------------- 지역,차종,연료,성별 선택 부분 각각 함수 ------------------------- #
-try:
         
-    @st.cache_data
-    def get_fuel(city, fuel):
-        """연료별 데이터 불러오기"""
-        conn = pymysql.connect(
+        
+# -------------------------- 지역,차종,연료,성별 선택 부분 각각 함수 ------------------------- #
+
+try:
+    
+    # -------------------------------- 연료 선택 시 함수 -------------------------------- #
+    # @st.cache_resource
+    def get_connection():
+        """DB 커넥션 생성 및 캐싱"""
+        return pymysql.connect(
             host="222.112.208.67",
-            # host="192.168.0.22",
             user="team_6",
             passwd="123",
             database="sk15_6team",
             port=3306,
         )
-        cur = conn.cursor()
 
-        def get_sql(query):
+    def run_query(conn, query):
+        """주어진 커넥션으로 쿼리 실행하고 결과 반환"""
+        with conn.cursor() as cur:
             cur.execute(query)
             return cur.fetchall()
         
-        
-        #쿼리 생성
-        conditions = []
+    @st.cache_data
+    def get_fuel(city, fuel):
+        """연료별 데이터 불러오기"""
+        conn = get_connection()
 
+        conditions = []
         if fuel != '전체':
             conditions.append(f"fuel_type IN ('{fuel}')")
-
         if city != '전체':
             conditions.append(f"region IN ('{city}')")
 
         where_clause = " AND ".join(conditions)
 
-        # 조건이 없으면 WHERE 생략
-        fuel_query =  get_sql(f"""
+        fuel_query = run_query(conn, f"""
             SELECT *
             FROM fuel_stats f
             {"WHERE " + where_clause if where_clause else ""}
         """)
-        
-        
-        columns_query = get_sql("DESC fuel_stats")
+
+        columns_query = run_query(conn, "DESC fuel_stats")
         col = [desc[0] for desc in columns_query]
 
         df_fuel = pd.DataFrame(fuel_query, columns=col)
@@ -149,9 +150,112 @@ try:
         df_fuel = df_fuel[df_fuel['vehicle_type'] == '소계'].drop(['vehicle_type'], axis=1)
         df_fuel.reset_index(drop=True, inplace=True)
         df_fuel["ym"] = pd.to_datetime(df_fuel["ym"], errors="coerce").dt.strftime("%Y-%m")
-        return df_fuel
-        
 
+        return df_fuel
+    
+    
+    
+    # -------------------------------- 지역 선택 시 함수 -------------------------------- #
+    
+    def get_gu_list(city):
+        conn = get_connection()
+        
+        conditions = ["CHAR_LENGTH(district) > 2"]  # 기본 조건 추가
+        
+        if city != "전체":
+            conditions.append(f"region LIKE '{city}%'")
+        
+        where_clause = " AND ".join(conditions)
+        
+        query = f"""
+            SELECT DISTINCT district
+            FROM car_stats
+            WHERE {where_clause}
+            ORDER BY district
+        """
+        
+        gulist_query = run_query(conn, query)
+        
+        gu_list = ['전체'] + [row[0] for row in gulist_query]
+        
+        return gu_list
+    
+    
+    
+    @st.cache_data
+    def get_city(city, gu):
+        """지역별 데이터 불러오기"""
+        conn = get_connection()
+        
+        #지역 리스트 가져오기
+        
+        conditions = []
+        if city != '전체':
+            conditions.append(f"region IN ('{city}')")
+        if gu != '전체':
+            conditions.append(f"district IN ('{gu}')")
+
+        where_clause = " AND ".join(conditions)
+
+        fuel_query = run_query(conn, f"""
+            SELECT *
+            FROM car_stats f
+            {"WHERE " + where_clause if where_clause else ""}
+        """)
+
+        columns_query = run_query(conn, "DESC car_stats")
+        col = [desc[0] for desc in columns_query]
+
+        df_loc = pd.DataFrame(fuel_query, columns=col)
+
+        # 소계만 가져오기 , 날짜 처리
+        # df_loc = df_loc[df_loc['vehicle_type'] == '소계'].drop(['vehicle_type'], axis=1)
+        # df_loc.reset_index(drop=True, inplace=True)
+        df_loc["ym"] = pd.to_datetime(df_loc["ym"], errors="coerce").dt.strftime("%Y-%m")
+
+        return df_loc
+    
+    
+    # -------------------------------- 차종 선택 시 함수 -------------------------------- #
+    get_cartype('서울','승용차')
+    @st.cache_data
+    def get_cartype(city, cartype):
+        """지역별 데이터 불러오기"""
+        conn = get_connection()
+
+        conditions = []
+        if city != '전체':
+            conditions.append(f"region IN ('{city}')")
+            
+        if cartype == '승용차':
+            sql_col = 'f.passenger'
+        elif cartype == '승합차':
+            sql_col = 'f.ven'
+        elif cartype == '화물차':
+            sql_col = 'f.truck'
+        elif cartype == '특수차량':
+            sql_col = 'f.special'
+        else:
+            sql_col = ['f.passenger', 'f.ven', 'f.truck', 'f.special']
+            sql_col = ", ".join(sql_col)
+
+        where_clause = " AND ".join(conditions)
+
+        query = run_query(conn, f"""
+            SELECT f.ym, f.region, {sql_col}
+            FROM vehicle_region f
+            {"WHERE " + where_clause if where_clause else ""}
+        """)
+
+
+        df = pd.DataFrame(query)
+
+        # 소계만 가져오기 , 날짜 처리
+        # df_loc = df_loc[df_loc['vehicle_type'] == '소계'].drop(['vehicle_type'], axis=1)
+        # df_loc.reset_index(drop=True, inplace=True)
+        df["ym"] = pd.to_datetime(df["ym"], errors="coerce").dt.strftime("%Y-%m")
+
+        return df
 
     # ----------------------------- selectbox로 조건 선택 ----------------------------- #
 
@@ -164,10 +268,11 @@ try:
 
     with col1:
         selection = st.selectbox("조건 선택", ["선택하세요", "지역별", "차종별", "연료별", "성별별"], key="selection")
-        if selection == "지역별":
-            sex = st.selectbox("시군구 선택", gu_list)
+        if selection == "지역별" and city:
+            gu = st.selectbox("시군구 선택", get_gu_list(city))
+
         elif selection == "차종별":
-            age = st.selectbox("차종별 선택", cartype_list)
+            cartype = st.selectbox("차종별 선택", cartype_list)
         elif selection == "연료별":
             fuel = st.selectbox("연료별 선택", fuel_list)
         elif selection == "성별별":
@@ -175,7 +280,9 @@ try:
         elif selection == "선택하세요":
             st.info("조건을 선택해주세요.")
             
-            
+
+# ------------------------------- 연료 구분 클릭 시 동작 ------------------------------ #
+
     if selection == "연료별" and search_clicked:
         df_fuel = get_fuel(city, fuel)
         st.write("### 📊 요약 통계")
@@ -186,7 +293,7 @@ try:
             .mark_bar()
             .encode(
                 x=alt.X("ym:T", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
-                y=alt.Y("registration_count:Q", title=""),
+                y=alt.Y("registration_count:Q", title="" ,scale=alt.Scale(type="log")),
                 color=alt.Color("fuel_type:N", title=""),
                 tooltip=["ym:T",'fuel_type:N', "registration_count:Q"]
             )
@@ -195,12 +302,81 @@ try:
         st.altair_chart(chart, use_container_width=True)
         
         
+        
+# ------------------------------ 지역 > 구 클릭 시 동작 ------------------------------ #
+
+    if selection == "지역별" and search_clicked:
+        df_loc = get_city(city, gu)
+        st.write("### 📊 요약 통계")
+        st.dataframe(df_loc, use_container_width=True)
+
+        chart = (
+            alt.Chart(df_loc)
+            .mark_bar()
+            .encode(
+                x=alt.X("ym:T", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
+                y=alt.Y("total:Q", title="", scale=alt.Scale(type="log")),
+                color=alt.Color("district:N", title=""),
+                tooltip=["ym:T",'district:N', "total:Q"]
+            )
+        )
+        labels = (
+            alt.Chart(df_loc)
+            .mark_text(
+                align='center',
+                baseline='bottom',
+                dy=-2,  # 막대 위에 약간 띄움
+                fontSize=10
+            )
+            .encode(
+                x="ym:T",
+                y="total:Q",
+                text=alt.Text("total:Q")
+            )
+        )
+            
+        st.altair_chart(chart + labels, use_container_width=True)
+        
+    # ------------------------------ 차종별 클릭 시 동작 ------------------------------ #
+
+    if selection == "차종별" and search_clicked:
+        df = get_cartype(city, cartype)
+        st.write("### 📊 요약 통계")
+        st.dataframe(df, use_container_width=True)
+
+        chart = (
+            alt.Chart(df)
+            .mark_bar()
+            .encode(
+                x=alt.X("ym:T", title="", axis=alt.Axis( labelFontSize=12, labelPadding=5) ),
+                y=alt.Y("total:Q", title="", scale=alt.Scale(type="log")),
+                color=alt.Color("district:N", title=""),
+                tooltip=["ym:T",'district:N', "total:Q"]
+            )
+        )
+        labels = (
+            alt.Chart(df)
+            .mark_text(
+                align='center',
+                baseline='bottom',
+                dy=-2,  # 막대 위에 약간 띄움
+                fontSize=10
+            )
+            .encode(
+                x="ym:T",
+                y="total:Q",
+                text=alt.Text("total:Q")
+            )
+        )
+            
+        st.altair_chart(chart + labels, use_container_width=True)     
+        
+        
+        
+        
 
     st.markdown('</div>', unsafe_allow_html=True)
-
     st.markdown('<br>', unsafe_allow_html=True)
-
-    # 데이터 가져오기, 그래프 출력 부분 카드 스타일 적용
     st.markdown('', unsafe_allow_html=True)
 
 
