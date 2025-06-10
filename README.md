@@ -1,10 +1,10 @@
 # 🚗 SKN15-1st-6TEAM
 
-## 1. 팀명
+## 1. 식스맨
 
 **팀원 소개**
 
-| 권도원 ([@dowonk120](https://github.com/dowonk120)) | 권주연 ([@yeoniii02](https://github.com/yeoniii02)) | 이소정 ([@leesojunghub](https://github.com/leesojunghub)) | 이준원([@none-jun](https://github.com/none-jun)) | 조솔찬 ([@solchna](https://github.com/solchna)) |
+| 권도원 ([@dowonk120](https://github.com/dowonk120)) | 권주연 ([@yeoniii02](https://github.com/yeoniii02)) | 이소정 ([@leesojunghub](https://github.com/leesojunghub)) | 이준원 ([@none-jun](https://github.com/none-jun)) | 조솔찬 ([@solchna](https://github.com/solchna)) |
 |----------------------|------------------------|----------------------------|--------|--------------------------|
 
 ---
@@ -78,16 +78,22 @@
 → *장기적인 구매 전략 및 자동차 수요 흐름 파악에 유용*
 
 
+---
 
 ## 4. ERD
 
 ![Image](https://github.com/user-attachments/assets/971f2a67-ace3-4d3c-938e-12257684c9ed)
 
 
+
+---
+
+## 5. 기술 스택
+
  
 
-## 7. 수행결과(테스트/시연 페이지)
+## 6. 수행결과(테스트/시연 페이지)
 
  
 
-## 8. 한 줄 회고
+## 7. 한 줄 회고
