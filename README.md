@@ -86,9 +86,19 @@
 
 
 
- 
+## 5. 기술 스택
+<div align="left">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" />
+  <img src="https://img.shields.io/badge/Altair-1E1E1E?style=for-the-badge&logo=chartdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
+  <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
+</div>
 
-## 5. 수행결과(테스트/시연 페이지)
+
+
+## 6. 수행결과(테스트/시연 페이지)
 ![Image](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN15-1st-6TEAM/blob/main/image%203.png)
 ![Image](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN15-1st-6TEAM/blob/main/image%204.png)
-
