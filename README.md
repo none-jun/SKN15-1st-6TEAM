@@ -85,19 +85,20 @@
 ![Image](https://github.com/user-attachments/assets/90958faa-b80a-4757-b247-050a4dbe3153)
 
 
+---
 
 ## 5. 기술 스택
-<div align="left">
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white" />
-  <img src="https://img.shields.io/badge/Altair-1E1E1E?style=for-the-badge&logo=chartdotjs&logoColor=white" />
-  <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
-  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" />
-  <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
-  <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" />
-</div>
+
+- ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+- ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+- ![Altair](https://img.shields.io/badge/Altair-1E1E1E?logo=chartdotjs&logoColor=white)
+- ![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white)
+- ![MySQL](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white)
+- ![Git](https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white)
+- ![GitHub](https://img.shields.io/badge/GitHub-181717?logo=github&logoColor=white)
 
 
+---
 
 ## 6. 수행결과(테스트/시연 페이지)
 ![Image](https://github.com/SKNETWORKS-FAMILY-AICAMP/SKN15-1st-6TEAM/blob/main/image%203.png)
